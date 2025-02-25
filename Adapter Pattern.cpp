@@ -1,107 +1,44 @@
 #include <iostream>
+#include <string>
 using namespace std;
 
-// Target interface
-class MediaPlayer {
+class Target {
 public:
-    virtual void play(const string& audioType, const string& fileName) = 0;
-    virtual ~MediaPlayer() {}
+    virtual void request() = 0;
+    virtual ~Target() {}
 };
 
-// Adaptee interface
-class AdvancedMediaPlayer {
+class OldSystem {
 public:
-    virtual void playVlc(const string& fileName) = 0;
-    virtual void playMp4(const string& fileName) = 0;
-    virtual ~AdvancedMediaPlayer() {}
-};
-
-// Concrete Adaptee
-class VlcPlayer : public AdvancedMediaPlayer {
-public:
-    void playVlc(const string& fileName) override {
-        cout << "Playing vlc file: " << fileName << endl;
-    }
-    
-    void playMp4(const string& fileName) override {
-        // Do nothing
+    void specificRequest() {
+        cout << "OldSystem: Handling specific request" << endl;
     }
 };
 
-class Mp4Player : public AdvancedMediaPlayer {
-public:
-    void playVlc(const string& fileName) override {
-        // Do nothing
-    }
-    
-    void playMp4(const string& fileName) override {
-        cout << "Playing mp4 file: " << fileName << endl;
-    }
-};
-
-// Adapter
-class MediaAdapter : public MediaPlayer {
+class Adapter : public Target {
 private:
-    AdvancedMediaPlayer* advancedMusicPlayer;
-    
-public:
-    MediaAdapter(const string& audioType) {
-        if (audioType == "vlc") {
-            advancedMusicPlayer = new VlcPlayer();
-        } else if (audioType == "mp4") {
-            advancedMusicPlayer = new Mp4Player();
-        }
-    }
-    
-    ~MediaAdapter() {
-        delete advancedMusicPlayer;
-    }
-    
-    void play(const string& audioType, const string& fileName) override {
-        if (audioType == "vlc") {
-            advancedMusicPlayer->playVlc(fileName);
-        } else if (audioType == "mp4") {
-            advancedMusicPlayer->playMp4(fileName);
-        }
-    }
-};
+    OldSystem* oldSystem;
 
-// Concrete Target
-class AudioPlayer : public MediaPlayer {
-private:
-    MediaAdapter* mediaAdapter;
-    
 public:
-    AudioPlayer() : mediaAdapter(nullptr) {}
-    
-    ~AudioPlayer() {
-        delete mediaAdapter;
+    Adapter() {
+        oldSystem = new OldSystem();
     }
-    
-    void play(const string& audioType, const string& fileName) override {
-        // Native support for mp3
-        if (audioType == "mp3") {
-            cout << "Playing mp3 file: " << fileName << endl;
-        }
-        // Using adapter for other formats
-        else if (audioType == "vlc" || audioType == "mp4") {
-            mediaAdapter = new MediaAdapter(audioType);
-            mediaAdapter->play(audioType, fileName);
-        } else {
-            cout << "Invalid media type: " << audioType << endl;
-        }
+
+    ~Adapter() {
+        delete oldSystem;
+    }
+
+    void request() override {
+        cout << "Adapter: Translating request to OldSystem" << endl;
+        oldSystem->specificRequest();
     }
 };
 
 int main() {
-    AudioPlayer* audioPlayer = new AudioPlayer();
+    Target* target = new Adapter();
     
-    audioPlayer->play("mp3", "song.mp3");
-    audioPlayer->play("vlc", "movie.vlc");
-    audioPlayer->play("mp4", "video.mp4");
-    audioPlayer->play("avi", "video.avi");
+    target->request();
     
-    delete audioPlayer;
-    
+    delete target;
     return 0;
 }
