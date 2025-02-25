@@ -1,87 +1,68 @@
 #include <iostream>
 using namespace std;
 
-// Strategy interface
-class PaymentStrategy {
+class SortStrategy {
 public:
-    virtual void pay(int amount) = 0;
-    virtual ~PaymentStrategy() {}
+    virtual void sort(int arr[], int size) = 0;
+    virtual ~SortStrategy() {}
 };
 
-// Concrete strategies
-class CreditCardStrategy : public PaymentStrategy {
-private:
-    string name;
-    string cardNumber;
-    string cvv;
-    string dateOfExpiry;
-    
+class BubbleSort : public SortStrategy {
 public:
-    CreditCardStrategy(const string& name, const string& cardNumber, 
-                      const string& cvv, const string& dateOfExpiry) 
-        : name(name), cardNumber(cardNumber), cvv(cvv), dateOfExpiry(dateOfExpiry) {}
-    
-    void pay(int amount) override {
-        cout << amount << " paid with credit card" << endl;
+    void sort(int arr[], int size) override {
+        cout << "Sorting array using bubble sort" << endl;
     }
 };
 
-class PayPalStrategy : public PaymentStrategy {
-private:
-    string emailId;
-    string password;
-    
+class QuickSort : public SortStrategy {
 public:
-    PayPalStrategy(const string& emailId, const string& password) 
-        : emailId(emailId), password(password) {}
-    
-    void pay(int amount) override {
-        cout << amount << " paid using PayPal" << endl;
+    void sort(int arr[], int size) override {
+        cout << "Sorting array using quick sort" << endl;
     }
 };
 
-// Context
-class ShoppingCart {
+class Sorter {
 private:
-    PaymentStrategy* paymentStrategy;
-    
+    SortStrategy* strategy;
+
 public:
-    ShoppingCart() : paymentStrategy(nullptr) {}
+    Sorter() : strategy(nullptr) {}
     
-    ~ShoppingCart() {
-        delete paymentStrategy;
+    ~Sorter() {
+        delete strategy;
     }
     
-    void setPaymentStrategy(PaymentStrategy* strategy) {
-        delete paymentStrategy;
-        paymentStrategy = strategy;
+    void setStrategy(SortStrategy* newStrategy) {
+        delete strategy;
+        strategy = newStrategy;
     }
     
-    void checkout(int amount) {
-        if (paymentStrategy) {
-            paymentStrategy->pay(amount);
+    void sortArray(int arr[], int size) {
+        if (strategy) {
+            strategy->sort(arr, size);
         } else {
-            cout << "No payment method selected" << endl;
+            cout << "No sorting strategy set" << endl;
         }
     }
 };
 
 int main() {
-    ShoppingCart* cart = new ShoppingCart();
+    int arr[] = {5, 2, 9, 1, 3};
+    int size = 5;
     
-    cout << "Enter payment method (1 for Credit Card, 2 for PayPal): ";
+    Sorter sorter;
+    
+    cout << "Choose sorting algorithm (1=Bubble sort, 2=Quick sort): ";
     int choice;
     cin >> choice;
     
     if (choice == 1) {
-        cart->setPaymentStrategy(new CreditCardStrategy("John Doe", "1234567890123456", "786", "12/2025"));
-    } else if (choice == 2) {
-        cart->setPaymentStrategy(new PayPalStrategy("john@example.com", "password"));
+        sorter.setStrategy(new BubbleSort());
+    } else {
+        sorter.setStrategy(new QuickSort());
     }
     
-    cart->checkout(100);
-    
-    delete cart;
+    sorter.sortArray(arr, size);
     
     return 0;
 }
